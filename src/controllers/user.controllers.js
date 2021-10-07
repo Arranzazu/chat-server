@@ -5,7 +5,7 @@ const helpers = require('../helpers');
 
 
 const signUp = async (req, res) => {
-  console.log('Hola SignUP')
+  console.log('Hola llegaste a SignUP')
 	try {
 		const { email, password1, password2 } = req.body;
 ;
@@ -13,17 +13,17 @@ const signUp = async (req, res) => {
 			return res.status(409).json({ error: 'Email or password incorrect!!' });
 		}
 		const hash = await helpers.bcrypt.encrypt(password1);
-		const user = models.user({ email, password: hash });
+		const user = models.user({ email, password: hash }); //password que se codifica
    		await user.save();
 		return res.status(201).json({ user });
 	} catch (err) {
-		return res.status(409).json({ error: 'Hubo un error en tu logeo' });
+		return res.status(409).json({ error: 'Hubo un error en tu preceso de logeo' });
 	}
 };
 
 
 const login = async (req, res) => {
-  console.log(login)
+  console.log('login')
 	try {
 		const { email, password } = req.body;
 
@@ -40,39 +40,19 @@ const login = async (req, res) => {
 		if (!isValid) {
 			return res.status(409).json({ error: 'Password invalido!' });
 		}
-
+		// Asigno el Token
 		const token = jwt.sign({ user }, config.jwt.secret);
-
-    return res.json({ token, userId: user._id });
+	
+//Envío los parámetros
+    return res.json({ email, token, admin: user.admin, userId: user._id });
       } catch (err) {
         return res.json({ err });
 	}
 };
 
-const suprime = async (req, res) => {
-  try {
-		const { id } = req.params;
-
-		const user = await models.user.find({ user: _id });
-		for (user in users) {
-			await models.user.findByIdAndRemove(user._id);
-		}
-
-		await models.user.findByIdAndRemove(id);
-
-		return res.json(true);
-	} catch (_) {
-		return res.status(409).json(false);
-	}
-};
-
-
 const create = async (req, res) => {
   try {
-    // const user = models.user(req.body)
-    // await user.save()
-
-    const user = await models.user.create(req.body);
+     const user = await models.user.create(req.body);
     return res.json({ user });
   } catch (err) {
     return res.json({ err });
@@ -82,7 +62,7 @@ const create = async (req, res) => {
 const all = async (req, res) => {
   try {
     const data = jwt.verify(req.headers.token, config.jwt.secret);
-    const users = await models.user.find({ _id: { $ne: data.user._id } }); // TODO listará todos los usuarios menos el mio
+    const users = await models.user.find({ _id: { $ne: data.user._id } }); // listará todos los usuarios menos el mio
 
     return res.json({ users });
   } catch (err) {
@@ -90,23 +70,13 @@ const all = async (req, res) => {
   }
 };
 
-// const login = async (req, res) => {
-//   try {
-//     const user = await models.user.findOne({ email: req.body.email });
-//     if (!user) {
-//       return res.json({ error: "User no existe" });
-//     }
+const suprime = async (req, res) => {
+	const { id } = req.params;
+	const user = await models.user.findOneAndRemove({ _id: id });
+	res.json({ user });
+	return res.json("usuario borrado"); 
+};
 
-//     if (user.password !== req.body.password) {
-//       return res.json({ error: "User no existe" });
-//     }
-
-//     const token = jwt.sign({ user }, config.jwt.secret);
-//     return res.json({ token, userId: user._id });
-//   } catch (err) {
-//     return res.json({ err });
-//   }
-// };
 
 module.exports = {
   create,

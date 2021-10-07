@@ -14,6 +14,6 @@ router.get("/all", middleware.users.isValid, controllers.user.all);
 // router.get("/all", controllers.user.all);
 router.post("/login", controllers.user.login);
 
-router.post("/suprime", middleware.users.isValid, controllers.user.suprime);
+router.delete("/suprime/:id", controllers.user.suprime);
 
 module.exports = router;
